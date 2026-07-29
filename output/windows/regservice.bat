@@ -1,2 +1,2 @@
-nssm.exe  install RapidStor RapidStor.exe
+nssm.exe  install VeoLinkServer VeoLinkServer.exe
 pause

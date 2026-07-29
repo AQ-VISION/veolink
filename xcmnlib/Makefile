@@ -221,13 +221,6 @@ LIB_SOURCES =   ./src/ffkit/argb24_to_yuv420p.o\
 				./src/utility/debug.o\
 				./src/utility/libcli.o\
 				./src/utility/utility.o\
-				./src/rapidrtsp/rapidrtsp.o\
-				./src/rapidrtsp/rapidrtsplog.o\
-				./src/rapidmedia/rapidaudiodec.o\
-				./src/rapidmedia/rapiddecsink.o\
-				./src/rapidmedia/rapidffmpegdec.o\
-				./src/rapidmedia/rapidmedia.o\
-				./src/rapidmedia/rapidmediadata.o\
 				../onvif/include/video/h5s_h264_sink.o\
 				../onvif/include/video/h5slib.o\
 				../onvif/include/video/h264_bit_reader.o\

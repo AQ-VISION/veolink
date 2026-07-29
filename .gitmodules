@@ -1,0 +1,3 @@
+[submodule "vecvr/src/html5stream"]
+	path = vecvr/src/html5stream
+	url = https://github.com/AQ-VISION/html5stream

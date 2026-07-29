@@ -23,125 +23,86 @@
  */
 
 
-#include "Rtsp/UDPServer.h"
-#include "Rtsp/RtspSession.h"
-#include "Rtmp/RtmpSession.h"
-#include "Http/HttpSession.h"
-
-#ifdef ENABLE_OPENSSL
-#include "Util/SSLBox.h"
-#include "Http/HttpsSession.h"
-#endif//ENABLE_OPENSSL
-
-#include "Util/logger.h"
-#include "Util/onceToken.h"
-#include "Util/File.h"
-#include "Network/TcpServer.h"
-#include "Poller/EventPoller.h"
-#include "Thread/WorkThreadPool.h"
-#include "Device/PlayerProxy.h"
-#include "Shell/ShellSession.h"
-#include "Common/config.h"
+#include <cstdio>
+#include <cstring>
 #include <map>
+#include <string>
 
 #include "mediaserver.hpp"
-#include "h264_parser.h"
+
+/* html5stream (AQ-VISION) C SDK */
+#include "mk_mediakit.h"
+
 using namespace std;
-using namespace ZL::Util;
-using namespace ZL::Http;
-using namespace ZL::Rtsp;
-using namespace ZL::Rtmp;
-using namespace ZL::Shell;
-using namespace ZL::Thread;
-using namespace ZL::Network;
-using namespace ZL::DEV;
-using namespace media;
 
+/* Default listen ports for the embedded media server */
+#define VE_MEDIA_RTSP_PORT 554
+#define VE_MEDIA_RTMP_PORT 1935
+#define VE_MEDIA_HTTP_PORT 80
 
-
-class VEMediaChannel : public DevChannel
+class VEMediaChannel
 {
 public:
 	VEMediaChannel(Factory &pFactory, std::string strId, int nStreamId);
 	~VEMediaChannel();
-	
+
 public:
 	static bool InitMediaServer();
-	static void MediaServerThread();
 
 public:
 	void DataHandler1(VideoFrame& frame);
-	static void DataHandler(VideoFrame& frame, void * pParam);	
-		
+	static void DataHandler(VideoFrame& frame, void * pParam);
+
 private:
 	std::string m_strId;
 	int m_nStreamId;
-	SmoothTicker m_Time;
 	bool m_bFirstFrame;
 
 	Factory &m_pFactory;
-	H264Parser m_H264Parser;
-	
-	static TcpServer<RtspSession> * m_rtspSrv;
-	static TcpServer<RtmpSession> * m_rtmpSrv;
-	static TcpServer<HttpSession> * m_httpSrv;
-	static TcpServer<ShellSession> * m_shellSrv;
-	static std::thread * m_pThread;
+	mk_media m_media;
 };
-
-TcpServer<RtspSession>* VEMediaChannel::m_rtspSrv = NULL;
-TcpServer<RtmpSession>* VEMediaChannel::m_rtmpSrv = NULL;
-TcpServer<HttpSession>* VEMediaChannel::m_httpSrv = NULL;
-TcpServer<ShellSession>* VEMediaChannel::m_shellSrv = NULL;
-std::thread * VEMediaChannel::m_pThread = NULL;
 
 bool VEMediaChannel::InitMediaServer()
 {
-	Logger::Instance().add(std::make_shared<ConsoleChannel>("stdout", LTrace));
-	Config::loaIniConfig();
-	
-	m_rtspSrv = new TcpServer<RtspSession>();
-	m_rtmpSrv = new TcpServer<RtmpSession>();
-	m_httpSrv = new TcpServer<HttpSession>();
-	m_shellSrv = new TcpServer<ShellSession>();
-	
-	m_rtspSrv->start(mINI::Instance()[Config::Rtsp::kPort]);
-	m_rtmpSrv->start(mINI::Instance()[Config::Rtmp::kPort]);
-	m_httpSrv->start(mINI::Instance()[Config::Http::kPort]);
-	
-	//TODO add HTTPS support
-	
-	m_pThread = new std::thread(VEMediaChannel::MediaServerThread);
-	
+	mk_config config;
+	memset(&config, 0, sizeof(config));
+	config.ini = NULL;
+	config.ini_is_path = 1;
+	config.log_level = 0;
+	config.log_mask = LOG_CONSOLE;
+	config.log_file_path = NULL;
+	config.log_file_days = 0;
+	config.ssl = NULL;
+	config.ssl_is_path = 1;
+	config.ssl_pwd = NULL;
+	config.thread_num = 0;
+
+	mk_env_init(&config);
+
+	mk_rtsp_server_start(VE_MEDIA_RTSP_PORT, 0);
+	mk_rtmp_server_start(VE_MEDIA_RTMP_PORT, 0);
+	mk_http_server_start(VE_MEDIA_HTTP_PORT, 0);
+
 	return true;
-	
 }
 
-void VEMediaChannel::MediaServerThread()
-{
-	
-	/* Loop for media server */
-	EventPoller::Instance().runLoop();
-
-	delete m_rtspSrv;
-	delete m_rtmpSrv;
-	delete m_httpSrv;
-	delete m_shellSrv;
-
-	//TODO HTTPS support
-
-	UDPServer::Destory();
-	WorkThreadPool::Destory();
-	EventPoller::Destory();
-	Logger::Destory();	
-	return;
-}	
-
 VEMediaChannel::VEMediaChannel(Factory &pFactory, std::string strId, int nStreamId)
-:m_pFactory(pFactory), m_strId(strId), m_nStreamId(nStreamId), m_bFirstFrame(true),
-DevChannel("live", strId.c_str())
-{	
+:m_strId(strId), m_nStreamId(nStreamId), m_bFirstFrame(true),
+m_pFactory(pFactory), m_media(NULL)
+{
 	printf("Device ID %s  Stream %d\n", strId.c_str(), m_nStreamId);
+
+	/* Create the media source (rtsp/rtmp/http-flv are published automatically) */
+	m_media = mk_media_create("__defaultVhost__", "live", m_strId.c_str(), 0, 0, 0);
+
+	/* H264 track; SPS/PPS and resolution are parsed from the stream */
+	codec_args v_args;
+	memset(&v_args, 0, sizeof(v_args));
+	mk_track v_track = mk_track_create(MKCodecH264, &v_args);
+	mk_media_init_track(m_media, v_track);
+	mk_media_init_complete(m_media);
+	mk_track_unref(v_track);
+
 	if (m_nStreamId == 1)
 	{
 		m_pFactory.RegDataCallback(m_strId,
@@ -173,12 +134,16 @@ VEMediaChannel::~VEMediaChannel()
 	{
 		m_pFactory.UnRegDataCallback(m_strId, (void *)this);
 	}
-	
+
+	if (m_media)
+	{
+		mk_media_release(m_media);
+		m_media = NULL;
+	}
 }
 
 void VEMediaChannel::DataHandler1(VideoFrame& frame)
 {
-	//printf("%s---%d\n", __FILE__, __LINE__);
 	/* Process the video frame for media server */
 	switch (frame.streamType)
 	{
@@ -189,16 +154,12 @@ void VEMediaChannel::DataHandler1(VideoFrame& frame)
 		default:
 		   	return;
 	};	
-	//printf("%s---%d\n", __FILE__, __LINE__);
 
 	CodecType current;
 	bool bIsKeyFrame = false;
 
 	u8  *dataBuf = NULL;
 	u32 dataSize = 0;
-
-	VideoFrameType type = frame.frameType;
-	//printf("%s---%d\n", __FILE__, __LINE__);
 
 	switch (frame.frameType)
 	{
@@ -243,94 +204,30 @@ void VEMediaChannel::DataHandler1(VideoFrame& frame)
 		default:
 		   	return;
 	};
-	//printf("%s---%d\n", __FILE__, __LINE__);
-	if (m_bFirstFrame == true)
-	{
-		m_Time.resetTime();
-	}
-	
-	m_H264Parser.Reset();
-	m_H264Parser.SetStream(dataBuf, dataSize);
-	int sps_id = 0;
 
-	H264NALU nalu;
-	std::vector<H264NALU> nalus;
-	int pps_id;
-
+	/* Wait for the first key frame before feeding the stream */
 	if (m_bFirstFrame == true)
 	{
 		if (bIsKeyFrame == false)
 		{
-			std::cout << "Have not get I frame skip" << std::endl;
+			printf("Have not get I frame skip\n");
 			return;
 		}
-	}
-	H264NALU nal_sps;
-	H264NALU nal_pps;
-
-	while (m_H264Parser.AdvanceToNextNALU(&nalu) != H264Parser::kEOStream) {
-		switch (nalu.nal_unit_type) {
-		case H264NALU::Type::kSPS:
-			nal_sps = nalu;
-			//Live555DumpHex((unsigned char *)nalu.data, nalu.size);
-			m_H264Parser.ParseSPS(&sps_id);
-			//std::cout << "get sps id:" << sps_id << std::endl;
-			break;
-		case H264NALU::Type::kPPS:
-			nal_pps = nalu;
-			m_H264Parser.ParsePPS(&pps_id);
-			//std::cout << "get pps id:" << pps_id << std::endl;
-			break;
-		case H264NALU::Type::kSEIMessage:
-			/* todo */
-			break;
-		case H264NALU::Type::kSliceDataA:
-		case H264NALU::Type::kSliceDataB:
-		case H264NALU::Type::kSliceDataC:
-		case H264NALU::Type::kIDRSlice: 
-		{
-			break;
-		}
-		default:
-			//std::cout << "NAL none" << std::endl;
-			break;
-		}
-		nalus.push_back(nalu);
-		
-	}
-
-	if (m_bFirstFrame && bIsKeyFrame == true)
-	{
-		const H264SPS* pSPS = m_H264Parser.GetSPS(sps_id);
-		const H264PPS* pPPS = m_H264Parser.GetPPS(pps_id);
-		VideoInfo info;
-		info.iWidth  = (pSPS->pic_width_in_mbs_minus1 + 1) * 16;
-		info.iHeight = (pSPS->pic_height_in_map_units_minus1 + 1) * 16;
-		info.iFrameRate = 25;
-
-		initVideo(info);
 		m_bFirstFrame = false;
 	}
-	
-	uint32_t uiStamp = m_Time.elapsedTime();
 
-	/* loop to put frame */
-	for (auto nalu : nalus) 
+	if (m_media == NULL || dataBuf == NULL || dataSize == 0)
 	{
-		//if (nalu.nal_unit_type == H264NALU::Type::kIDRSlice || nalu.nal_unit_type == H264NALU::Type::kNonIDRSlice)
-		{
-			unsigned int *p = (unsigned int *) (nalu.data - 4);
-			int psize = nalu.size + 4;
-			if (psize > 20)
-			{
-				psize = 20;
-			}
-			//DumpHexData((unsigned char*)p,psize);
-			//printf("%s---%d size %d\n", __FILE__, __LINE__, nalu.size + 4);
-			inputH264((char *)p, nalu.size + 4, uiStamp);
-		}
+		return;
 	}
-	
+
+	/*
+	 * The buffer is an Annex-B H264 access unit (with start codes).
+	 * mk_media_input_h264 splits NALUs and parses SPS/PPS internally.
+	 * dts/pts = 0 lets the library generate timestamps.
+	 */
+	mk_media_input_h264(m_media, dataBuf, dataSize, 0, 0);
+
 	return;
 }
 

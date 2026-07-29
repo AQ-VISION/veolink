@@ -628,11 +628,13 @@ class thread::id {
 
 
 // Related to <ratio> - minimal to be able to support chrono.
-typedef long long __intmax_t;
+// NOTE: renamed from __intmax_t: that identifier is reserved and collides with
+// glibc's global __intmax_t once "using namespace tthread;" is in effect.
+typedef long long _tt_intmax_t;
 
 /// Minimal implementation of the @c ratio class. This class provides enough
 /// functionality to implement some basic @c chrono classes.
-template <__intmax_t N, __intmax_t D = 1> class ratio {
+template <_tt_intmax_t N, _tt_intmax_t D = 1> class ratio {
   public:
     static double _as_double() { return double(N) / double(D); }
 };
@@ -661,12 +663,12 @@ namespace chrono {
   };
 
   // Standard duration types.
-  typedef duration<__intmax_t, ratio<1, 1000000000> > nanoseconds; ///< Duration with the unit nanoseconds.
-  typedef duration<__intmax_t, ratio<1, 1000000> > microseconds;   ///< Duration with the unit microseconds.
-  typedef duration<__intmax_t, ratio<1, 1000> > milliseconds;      ///< Duration with the unit milliseconds.
-  typedef duration<__intmax_t> seconds;                            ///< Duration with the unit seconds.
-  typedef duration<__intmax_t, ratio<60> > minutes;                ///< Duration with the unit minutes.
-  typedef duration<__intmax_t, ratio<3600> > hours;                ///< Duration with the unit hours.
+  typedef duration<_tt_intmax_t, ratio<1, 1000000000> > nanoseconds; ///< Duration with the unit nanoseconds.
+  typedef duration<_tt_intmax_t, ratio<1, 1000000> > microseconds;   ///< Duration with the unit microseconds.
+  typedef duration<_tt_intmax_t, ratio<1, 1000> > milliseconds;      ///< Duration with the unit milliseconds.
+  typedef duration<_tt_intmax_t> seconds;                            ///< Duration with the unit seconds.
+  typedef duration<_tt_intmax_t, ratio<60> > minutes;                ///< Duration with the unit minutes.
+  typedef duration<_tt_intmax_t, ratio<3600> > hours;                ///< Duration with the unit hours.
 }
 
 /// The namespace @c this_thread provides methods for dealing with the

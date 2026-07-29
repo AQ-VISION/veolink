@@ -336,7 +336,7 @@ void VSCMainWindows::ExitOpenCVR()
 {
 	QMessageBox msgBox(this);
 	//Set text
-	msgBox.setText(tr("RAPIDVMS EXIT ..."));
+	msgBox.setText(tr("VEOLINK EXIT ..."));
 	    //Set predefined icon, icon is show on left side of text.
 	msgBox.setIconPixmap(QPixmap(":/logo/resources/vsc32.png"));
 
@@ -371,10 +371,10 @@ void VSCMainWindows::SetupToolBar()
 
 void VSCMainWindows::about()
 {
-   QMessageBox::about(this, tr("ABOUT RAPIDVMS"),
-            tr("<b>License & Pricing</b> <br>"
+   QMessageBox::about(this, tr("ABOUT VEOLINK"),
+            tr("<b>VeoLink - VMS Software Community Edition</b> <br>"
+            "Based on rapidvms "
             "<a href=\"https://github.com/veyesys/rapidvms\">https://github.com/veyesys/rapidvms</a>"
-            "  <br><a href=\"http://www.veyesys.com/\">http://www.veyesys.com/</a>"
 			"<br>"));
 }
 

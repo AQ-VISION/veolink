@@ -34,6 +34,12 @@
 #include <math.h>
 #include <time.h>
 #include <string.h>
+#if HAVE_ARC4RANDOM && defined(__GLIBC__)
+/* glibc >= 2.36 provides arc4random but hides the declaration when strict
+ * feature-test macros (e.g. _XOPEN_SOURCE) are in effect. */
+#include <stdint.h>
+uint32_t arc4random(void);
+#endif
 #include "avassert.h"
 #include "internal.h"
 #include "intreadwrite.h"

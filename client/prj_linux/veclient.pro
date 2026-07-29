@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 
 TEMPLATE = app
-TARGET = RapidClient
+TARGET = VeoLinkClient
 QMAKE_CXXFLAGS += -std=c++11
 DESTDIR = ./
 QT += core sql network xml dbus widgets gui  printsupport  concurrent 

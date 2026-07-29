@@ -2780,7 +2780,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <OutputFile>$(OutDir)\RapidClient.exe</OutputFile>
+      <OutputFile>$(OutDir)\VeoLinkClient.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rdparty\ffmpeg-54\lib;..\..\3rdparty\leveldb\win32_proj\Debug;..\..\3rdparty\poco\lib\;..\..\3rdparty\libcli\Debug\;..\..\3rdparty\onvifc\lib\Debug\;..\..\velib\lib\win32\Debug;.\Debug\;..\..\3rdparty\openssl-win\openssl-win32\lib\;..\..\veuilib\lib\win32\Debug\;..\..\xcmnlib\lib\win32\Debug;..\..\3rdparty\protobuf\cmake\win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Concurrentd.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5PrintSupportd.lib;Qt5Widgetsd.lib;Qt5Xmld.lib;Qt5XmlPatternsd.lib;wsock32.lib;leveldb.lib;memenv.lib;Qt5AxBase.lib;ws2_32.lib;dsound.lib;ole32.lib;comsupp.lib;velib.lib;veuilib.lib;cmnlib.lib;winmm.lib;libeay32.lib;IPHLPAPI.lib;ssleay32.lib;Dbghelp.lib;Rpcrt4.lib;libprotobufd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -2790,7 +2790,7 @@
       </IgnoreAllDefaultLibraries>
       <StackReserveSize>
       </StackReserveSize>
-      <ProgramDatabaseFile>$(OutDir)\RapidClient.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)\VeoLinkClient.pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -2804,7 +2804,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <OutputFile>$(OutDir)\RapidClient64.exe</OutputFile>
+      <OutputFile>$(OutDir)\VeoLinkClient64.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rdparty\leveldb\win32_proj\x64\Debug\;..\..\3rdparty\poco\lib64\;..\..\3rdparty\onvifc\lib64\Debug\;..\..\velib\lib\x64\Debug\;.\x64\Debug\;..\..\3rdparty\openssl-win64\lib\;..\..\veuilib\lib\x64\Debug\;..\..\xcmnlib\lib\x64\Debug;..\..\3rdparty\protobuf\cmake\x64\lib\;..\..\3rdparty\openssl-win\openssl-win64\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmaind.lib;Qt5Cored.lib;Qt5Guid.lib;Qt5Networkd.lib;Qt5Concurrentd.lib;Qt5OpenGLd.lib;opengl32.lib;glu32.lib;Qt5PrintSupportd.lib;Qt5Widgetsd.lib;Qt5Xmld.lib;Qt5XmlPatternsd.lib;wsock32.lib;leveldb.lib;memenv.lib;;Qt5AxBase.lib;ws2_32.lib;dsound.lib;ole32.lib;comsupp.lib;velib.lib;veuilib.lib;cmnlib.lib;winmm.lib;libeay32.lib;IPHLPAPI.lib;ssleay32.lib;Dbghelp.lib;Rpcrt4.lib;libprotobufd.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -2814,7 +2814,7 @@
       </IgnoreAllDefaultLibraries>
       <StackReserveSize>
       </StackReserveSize>
-      <ProgramDatabaseFile>$(OutDir)\RapidClient64.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)\VeoLinkClient64.pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -2827,7 +2827,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\RapidClient.exe</OutputFile>
+      <OutputFile>$(OutDir)\VeoLinkClient.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rdparty\ffmpeg-54\lib;..\..\3rdparty\leveldb\win32_proj\Release;..\..\3rdparty\poco\lib\;..\..\3rdparty\libcli\Release\;..\..\3rdparty\onvifc\lib\Release\;..\..\velib\lib\win32\Release;..\..\3rdparty\openssl-win\openssl-win32\lib;.\Release;..\..\veuilib\lib\win32\Release;..\..\xcmnlib\lib\win32\Release;..\..\3rdparty\protobuf\cmake\win32\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Concurrent.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5PrintSupport.lib;Qt5Widgets.lib;Qt5Xml.lib;Qt5XmlPatterns.lib;wsock32.lib;leveldb.lib;memenv.lib;;ws2_32.lib;dsound.lib;ole32.lib;comsupp.lib;velib.lib;veuilib.lib;libeay32.lib;ssleay32.lib;IPHLPAPI.lib;Dbghelp.lib;Rpcrt4.lib;cmnlib.lib;libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -2835,7 +2835,7 @@
       </IgnoreSpecificDefaultLibraries>
       <OptimizeReferences>false</OptimizeReferences>
       <StackReserveSize>10485760</StackReserveSize>
-      <ProgramDatabaseFile>$(OutDir)\RapidClient.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)\VeoLinkClient.pdb</ProgramDatabaseFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -2848,7 +2848,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <OutputFile>$(OutDir)\RapidClient64.exe</OutputFile>
+      <OutputFile>$(OutDir)\VeoLinkClient64.exe</OutputFile>
       <AdditionalLibraryDirectories>$(QTDIR)\lib;..\..\3rdparty\leveldb\win32_proj\x64\Release\;..\..\3rdparty\poco\lib64\;..\..\3rdparty\onvifc\lib64\Release\;..\..\velib\lib\x64\Release;..\..\3rdparty\openssl-win\openssl-win64\lib\;.\x64\Release;..\..\veuilib\lib\x64\Release;..\..\xcmnlib\lib\x64\Release;..\..\3rdparty\protobuf\cmake\x64\lib\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>qtmain.lib;Qt5Core.lib;Qt5Gui.lib;Qt5Network.lib;Qt5Concurrent.lib;Qt5OpenGL.lib;opengl32.lib;glu32.lib;Qt5PrintSupport.lib;Qt5Widgets.lib;Qt5Xml.lib;Qt5XmlPatterns.lib;wsock32.lib;leveldb.lib;memenv.lib;;ws2_32.lib;dsound.lib;ole32.lib;comsupp.lib;velib.lib;veuilib.lib;libeay32.lib;ssleay32.lib;IPHLPAPI.lib;Dbghelp.lib;Rpcrt4.lib;cmnlib.lib;libprotobuf.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -2857,7 +2857,7 @@
       <OptimizeReferences>false</OptimizeReferences>
       <StackReserveSize>
       </StackReserveSize>
-      <ProgramDatabaseFile>$(OutDir)\RapidClient64.pdb</ProgramDatabaseFile>
+      <ProgramDatabaseFile>$(OutDir)\VeoLinkClient64.pdb</ProgramDatabaseFile>
       <HeapReserveSize>
       </HeapReserveSize>
       <HeapCommitSize>

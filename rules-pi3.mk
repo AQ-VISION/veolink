@@ -1,4 +1,6 @@
-export VE_PATH=/home/user/arm/ve/
+# Repo root. Auto-detected when sourced from the repo root; override by
+# exporting VE_PATH before sourcing.
+export VE_PATH=${VE_PATH:-$(pwd)}
 
 export VE_OS=raspberry
 export VE_ARCH=32

@@ -1,2 +1,2 @@
-nssm.exe  remove RapidStor64 confirm
+nssm.exe  remove VeoLinkServer64 confirm
 pause

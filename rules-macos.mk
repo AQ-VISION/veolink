@@ -1,4 +1,6 @@
-export VE_PATH=/Users/user/rapidvms
+# Repo root. Auto-detected when sourced from the repo root; override by
+# exporting VE_PATH before sourcing.
+export VE_PATH=${VE_PATH:-$(pwd)}
 
 export VE_OS=macos
 export VE_ARCH=`uname -m | sed 's/x86_//;s/i[3-6]86/32/'`

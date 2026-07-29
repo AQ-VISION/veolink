@@ -6,37 +6,23 @@ clean:vepro_clean mediaserver_clean
 vepro_build:
 	cd ./prj_linux/ ; qmake .;
 	$(MAKE) -C ./prj_linux;
-	cp -r ./prj_linux/RapidStor* ../output/$(VE_INSTALL_DIR)/ 
+	cp -r ./prj_linux/VeoLinkServer* ../output/$(VE_INSTALL_DIR)/ 
 ifeq ($(strip $(VE_OS)), macos)
-	cp -r ../output/macos/RapidStor* ../output/$(VE_INSTALL_DIR)/
+	cp -r ../output/macos/VeoLinkServer* ../output/$(VE_INSTALL_DIR)/
 endif
 
-#Change ZLMediaKit/CMakeLists.txt for HLS
-#add_definitions(-DENABLE_RTMP2RTSP -DENABLE_RTSP2RTMP -DENABLE_HLS)
+#html5stream (AQ-VISION) provides the embedded media server C SDK (libmk_api)
+#Only the SDK is built; MediaServer binary, tests, WebRTC/SRT are disabled
 mediaserver_build:
-	cd src/ZLToolKit; mkdir -p build; cd build;cmake .. -DOPENSSL_ROOT_DIR=$(VE_PATH)/output/$(VE_INSTALL_DIR)/  -DCMAKE_CXX_FLAGS="-fpic"  -DCMAKE_INSTALL_PREFIX=$(VE_PATH)/output/$(VE_INSTALL_DIR)/; make; make install;
-	#delete shared library
-ifeq ($(strip $(VE_OS)), macos)
-	rm -rf $(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/libZLToolKit.dylib
-else
-	rm -rf $(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/libZLToolKit.so
-endif
-	cd src/ZLMediaKit; mkdir -p build; cd build;cmake .. -DOPENSSL_ROOT_DIR=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ -DCMAKE_CXX_FLAGS="-fpic" -DCMAKE_INSTALL_PREFIX=$(VE_PATH)/output/$(VE_INSTALL_DIR)/; make; make install;
-	#delete shared library
-ifeq ($(strip $(VE_OS)), macos)
-	rm -rf $(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/libZLMediaKit.dylib
-else
-	rm -rf $(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/libZLMediaKit.so
-endif
+	cd src/html5stream; git submodule update --init --recursive; mkdir -p build; cd build; cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fpic" -DCMAKE_INSTALL_PREFIX=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ -DENABLE_SERVER=OFF -DENABLE_TESTS=OFF -DENABLE_WEBRTC=OFF -DENABLE_SRT=OFF -DENABLE_OPENSSL=OFF -DENABLE_FFMPEG=OFF -DENABLE_PACKAGING=OFF; make; make install;
 
 vepro_clean:
 	cd ./prj_linux/ ; qmake .;
 	$(MAKE) -C ./prj_linux/ clean;
-	rm -rf ./prj_linux/RapidStor*
+	rm -rf ./prj_linux/VeoLinkServer*
 
 mediaserver_clean:
-	rm -rf src/ZLToolKit/build
-	rm -rf src/ZLMediaKit/build
+	rm -rf src/html5stream/build
 
 	
 	

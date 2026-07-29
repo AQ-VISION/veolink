@@ -1,0 +1,28 @@
+# Generated qmake Makefiles (regenerated at build time by `qmake`)
+client/prj_linux/Makefile
+vecvr/prj_linux/Makefile
+veuilib/prj_linux/Makefile
+velib/prj_linux/Makefile
+xcmnlib/prj_linux/Makefile
+
+# qmake object/moc artifacts
+*/prj_linux/.qmake.stash
+*/prj_linux/moc_*.cpp
+*/prj_linux/moc_*.o
+*/prj_linux/qrc_*.cpp
+*/prj_linux/*.o
+
+# Build output tree (populated by `make install` of subprojects)
+output/*/bin/
+output/*/lib/
+output/*/include/
+output/*/share/
+output/*/mkspecs/
+output/*/plugins/
+output/*/doc/
+output/*/ssl/
+output/*/man/
+
+# html5stream / CMake build dirs
+vecvr/src/html5stream/build/
+vecvr/src/html5stream/release/

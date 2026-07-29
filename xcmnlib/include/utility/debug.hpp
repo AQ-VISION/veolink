@@ -58,7 +58,7 @@ public:
 	:m_nPort(nPort), m_strLoggerPath(strLoggerPath)
 	{
 		spd::set_level(spd::level::debug);
-		m_pLogger = spd::rotating_logger_mt("rapidvms", m_strLoggerPath, 1024 * 1024 * 5, 3, true);
+		m_pLogger = spd::rotating_logger_mt("veolink", m_strLoggerPath, 1024 * 1024 * 5, 3, true);
 	}
 public:
 	static void run(void * pParam);

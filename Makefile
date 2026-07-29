@@ -1,5 +1,5 @@
 $(eval version=$(shell grep "define VE_VERSION" include/config/confver.hpp | sed 's|.*VERSION "\(.*\)"|\1|g'))
-REL=Rapidvms-$(version)-$(VE_OS)-$(VE_VER)-$(VE_ARCH)bit
+REL=VeoLink-CE-$(version)-$(VE_OS)-$(VE_VER)-$(VE_ARCH)bit
 
 ifeq ($(strip $(VE_CROSS_COMPILER)), )
 subdirs=3rdparty xcmnlib velib veuilib vecvr client
@@ -95,10 +95,10 @@ endif
 	rm -rf ./$(REL)/lib/*.dbg
 	rm -rf ./$(REL)/lib/libSDL*
 ifeq ($(strip $(VE_OS)), macos)
-	$(VE_CROSS_COMPILER)strip ./$(REL)/RapidClient.app/Contents/MacOS/Rapid*
-	$(VE_CROSS_COMPILER)strip ./$(REL)/RapidStor.app/Contents/MacOS/Rapid*
-	cp -r ./output/$(VE_INSTALL_DIR)/plugins/* ./$(REL)/RapidClient.app/Contents/MacOS/
-	cp -r ./output/$(VE_INSTALL_DIR)/plugins/* ./$(REL)/RapidStor.app/Contents/MacOS/
+	$(VE_CROSS_COMPILER)strip ./$(REL)/VeoLinkClient.app/Contents/MacOS/VeoLink*
+	$(VE_CROSS_COMPILER)strip ./$(REL)/VeoLinkServer.app/Contents/MacOS/VeoLink*
+	cp -r ./output/$(VE_INSTALL_DIR)/plugins/* ./$(REL)/VeoLinkClient.app/Contents/MacOS/
+	cp -r ./output/$(VE_INSTALL_DIR)/plugins/* ./$(REL)/VeoLinkServer.app/Contents/MacOS/
 	
 	#$(VE_CROSS_COMPILER)strip ./$(REL)/lib/libveuilib.dylib
 	#$(VE_CROSS_COMPILER)strip ./$(REL)/lib/*ve*.so

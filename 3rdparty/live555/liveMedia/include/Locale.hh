@@ -43,8 +43,12 @@ along with this library; if not, write to the Free Software Foundation, Inc.,
 
 #ifndef LOCALE_NOT_USED
 #include <locale.h>
-#ifndef XLOCALE_NOT_USED
+#if !defined(XLOCALE_NOT_USED) && defined(__has_include)
+#if __has_include(<xlocale.h>)
 #include <xlocale.h> // because, on some systems, <locale.h> doesn't include <xlocale.h>; this makes sure that we get both
+#endif
+#elif !defined(XLOCALE_NOT_USED) && !defined(__GLIBC__)
+#include <xlocale.h> // glibc >= 2.26 removed <xlocale.h>; everything it provided is in <locale.h>
 #endif
 #endif
 

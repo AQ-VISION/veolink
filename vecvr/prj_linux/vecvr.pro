@@ -3,7 +3,7 @@
 # ------------------------------------------------------
 
 TEMPLATE = app
-TARGET = RapidStor 
+TARGET = VeoLinkServer 
 QMAKE_CXXFLAGS += -std=c++11
 DESTDIR = ./
 QT += core sql network xml   widgets gui  printsupport  concurrent 
@@ -54,9 +54,7 @@ INCLUDEPATH += ./GeneratedFiles \
     ./../../3rdparty/spdlog/include\
     ./../../onvif/include\
     ./../../onvif/video\
-    ../../output/$$(VE_INSTALL_DIR)/include/ZLMediaKit\
-    ../../output/$$(VE_INSTALL_DIR)/include/ZLMediaKit/H264\
-    ../../output/$$(VE_INSTALL_DIR)/include/ZLToolKit\
+    ../../output/$$(VE_INSTALL_DIR)/include/mk_api\
     ../../output/$$(VE_INSTALL_DIR)/include/QtCore\
     ../../output/$$(VE_INSTALL_DIR)/include/QtGui\
     ../../output/$$(VE_INSTALL_DIR)/include/QtWidgets\
@@ -73,8 +71,7 @@ LIBS +=  \
     -L"./../../3rdparty/leveldb/" \
     -L../../output/$$(VE_INSTALL_DIR)/lib \
     -L../../output/$$(VE_INSTALL_DIR)/lib/x86_64-linux-gnu \
-    -lZLMediaKit\
-    -lZLToolKit\
+    -lmk_api\
     -lcmnlib\
     -lavcodec \
     -lavformat \

@@ -33,6 +33,7 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <functional>
 
 #include "cppkit/os/ck_exports.h"
 

@@ -15,43 +15,43 @@ export ve_libPocoJSON=libPocoJSON.24.dylib
 
 export ve_libcurl=libcurl.4.dylib
 
-#Change RapidClient
-cd $VE_PATH/output/$VE_INSTALL_DIR/RapidClient.app/Contents/MacOS
+#Change VeoLinkClient
+cd $VE_PATH/output/$VE_INSTALL_DIR/VeoLinkClient.app/Contents/MacOS
 
-install_name_tool -add_rpath @loader_path/../../../lib RapidClient
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so RapidClient
+install_name_tool -add_rpath @loader_path/../../../lib VeoLinkClient
+install_name_tool -change libcmnlib.so @rpath/libcmnlib.so VeoLinkClient
 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec RapidClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat RapidClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil RapidClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter RapidClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale RapidClient
-install_name_tool -change libvelib.so @rpath/libvelib.so RapidClient
-install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib RapidClient
-
-
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation RapidClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite RapidClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData RapidClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil RapidClient
-
-#Change RapidStor
-cd $VE_PATH/output/$VE_INSTALL_DIR/RapidStor.app/Contents/MacOS
-install_name_tool -add_rpath @loader_path/../../../lib RapidStor
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so RapidStor
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec RapidStor
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat RapidStor
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil RapidStor
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter RapidStor
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale RapidStor
-install_name_tool -change libvelib.so @rpath/libvelib.so RapidStor
-install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib RapidStor
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec VeoLinkClient
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat VeoLinkClient
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil VeoLinkClient
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter VeoLinkClient
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale VeoLinkClient
+install_name_tool -change libvelib.so @rpath/libvelib.so VeoLinkClient
+install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib VeoLinkClient
 
 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation RapidStor
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite RapidStor
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData RapidStor
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil RapidStor
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation VeoLinkClient
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite VeoLinkClient
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData VeoLinkClient
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil VeoLinkClient
+
+#Change VeoLinkServer
+cd $VE_PATH/output/$VE_INSTALL_DIR/VeoLinkServer.app/Contents/MacOS
+install_name_tool -add_rpath @loader_path/../../../lib VeoLinkServer
+install_name_tool -change libcmnlib.so @rpath/libcmnlib.so VeoLinkServer
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec VeoLinkServer
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat VeoLinkServer
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil VeoLinkServer
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter VeoLinkServer
+install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale VeoLinkServer
+install_name_tool -change libvelib.so @rpath/libvelib.so VeoLinkServer
+install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib VeoLinkServer
+
+
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation VeoLinkServer
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite VeoLinkServer
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData VeoLinkServer
+install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil VeoLinkServer
 
 #Change Lib 
 cd $VE_PATH/output/$VE_INSTALL_DIR/lib

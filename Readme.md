@@ -1,30 +1,41 @@
-Use HPro AI NVR [https://linkingvision.com/hproainvr](https://linkingvision.com/hproainvr)  instead 
+# VeoLink - VMS Software Community Edition #
 
-https://community.linkingvision.com/t/hpro-ai-nvr-with-c-c-source-code-offering-and-4-channel-free 
-## Project closed. ##
+VeoLink CE is an open-source Video Management System (VMS), derived from the
+[rapidvms](https://github.com/veyesys/rapidvms) project (AGPL, project closed upstream).
 
-## New features ##
+It includes:
+
+* **VeoLinkServer** — server/recorder (formerly RapidStor)
+* **VeoLinkClient** — desktop client (formerly RapidClient)
+
+## Upstream history ##
 5.0 features
 1. OpenCV support.
 2. H265 support.
 3. Remove gsoap depends.
 
 
-# Rapidvms include RapidStor(server) and RapidClient(client) #
-
 # Build #
-### Linux ###
-	centos 7: sudo yum install nasm xorg-x11-server-devel zlib-devel gcc gcc-c++ perl-version libxcb libxcb-devel xcb-util xcb-util-devel xcb-util-*-devel libX11-devel libXrender-devel libXi-devel redhat-lsb-core libxslt-devel cmake libuuid-devel
-	
-	ubuntu: sudo apt-get install  "^libxcb.*" build-essential shtool libtool automake autoconf libbsd-dev libx11-xcb-dev libglu1-mesa-dev libxrender-dev libxi-dev cmake libx11-dev yasm libxext-dev libgl1-mesa-dev  zlib1g-dev freeglut3-dev uuid-dev
-	
-	Change VE_PATH in the rules.mk
+### Linux (Ubuntu 22.04 / 24.04 x86_64) ###
+	sudo apt-get install build-essential cmake git yasm nasm shtool libtool automake autoconf \
+	    qtbase5-dev qt5-qmake libqt5sql5-sqlite \
+	    "^libxcb.*-dev" libx11-xcb-dev libx11-dev libxext-dev libxrender-dev libxi-dev \
+	    libglu1-mesa-dev libgl1-mesa-dev freeglut3-dev \
+	    zlib1g-dev uuid-dev libbsd-dev lsb-release
+
+	$git submodule update --init --recursive
 	$source ./rules.mk
 	$make
 
+	Notes:
+	* The desktop client and server UI link against the distro Qt 5.15
+	  (qtbase5-dev / qt5-qmake). The vendored Qt 5.7.1 tarball in 3rdparty/qt
+	  is only used for cross-compile targets (e.g. Raspberry Pi).
+	* rules.mk auto-detects the repo root from the current directory; export
+	  VE_PATH beforehand to override.
+
 ### macOS ###
 	Install xcode
-	Change VE_PATH in the rules.mk
 	$source ./rules-macos.mk
 	$make 
 
@@ -40,15 +51,13 @@ https://community.linkingvision.com/t/hpro-ai-nvr-with-c-c-source-code-offering-
 	9. client\prj_win32\veclient.sln build
 	
 ### Raspberry pi 3 ###
-	Change VE_PATH & VE_CROSS_COMPILER_PATH in the rules-pi3.mk
+	Change VE_CROSS_COMPILER_PATH in the rules-pi3.mk
 	$source ./rules-pi3.mk
 	$make 
 
 # Wiki #
 
-*  [Manual](https://linkingv.gitbooks.io/rapidvmsusermanual/content/)
-
-*  [Manual PDF](https://www.gitbook.com/download/pdf/book/linkingv/rapidvmsusermanual)
+*  [Upstream rapidvms manual](https://linkingv.gitbooks.io/rapidvmsusermanual/content/)
 
 
 ----------
@@ -63,8 +72,8 @@ https://community.linkingvision.com/t/hpro-ai-nvr-with-c-c-source-code-offering-
 ![](https://raw.githubusercontent.com/xsmart/ve-img/master/snapshot/linkvms.jpg)
 
 
-#### Release Version ####
-[https://github.com/veyesys/version/tree/master/rapidvms](https://github.com/veyesys/version/tree/master/rapidvms)
+#### Upstream project ####
+[https://github.com/veyesys/rapidvms](https://github.com/veyesys/rapidvms)
 
 ### Features list ###
 	ONVIF profile S support.

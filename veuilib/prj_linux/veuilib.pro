@@ -5,7 +5,7 @@
 TEMPLATE = lib
 TARGET = veuilib
 CONFIG += plugin c++11
-QMAKE_CXXFLAGS += -std=c++11 -O2 -Wall -Wextra -pedantic -g -include utility/type.hpp 
+QMAKE_CXXFLAGS += -std=c++11 -O2 -Wall -Wextra -pedantic -g -I../../xcmnlib/include -include utility/type.hpp 
 DESTDIR = ./
 QT += core sql network xml  widgets gui printsupport concurrent
 CONFIG += debug

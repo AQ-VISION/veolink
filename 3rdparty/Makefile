@@ -2,9 +2,11 @@
 
 ifeq ($(strip $(PRJ_CROSS)), )
 ifeq ($(strip $(VE_OS)), macos)
-all:poco_build ffmpeg_build openssl_build_macos leveldb_build qt_build curl_build protobuf_build live555_build 
+all:poco_build ffmpeg_build openssl_build_macos leveldb_build curl_build protobuf_build live555_build 
 else
-all:poco_build ffmpeg_build openssl_build leveldb_build qt_build curl_build protobuf_build  live555_build 
+# Native Linux uses the distro Qt 5.15 (qtbase5-dev / qt5-qmake); the vendored
+# Qt 5.7.1 tarball is only built for cross-compile targets.
+all:poco_build ffmpeg_build openssl_build leveldb_build curl_build protobuf_build  live555_build 
 endif
 
 else

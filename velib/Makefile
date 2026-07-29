@@ -140,7 +140,7 @@ endif
 
 ifeq ($(MACHINE), x86_64)
 SDL2:
-	cd ./3rdparty/SDL2/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared CFLAGS="-fpic";
+	cd ./3rdparty/SDL2/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared CFLAGS="-fpic -fcommon";
 	$(MAKE) -C ./3rdparty/SDL2/ && $(MAKE) -C ./3rdparty/SDL2/ install;
 SDL2-macos:
 	cd ./3rdparty/SDL2-2.0.4-osx/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared CFLAGS="-fpic";

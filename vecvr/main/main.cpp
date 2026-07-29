@@ -55,7 +55,7 @@ static BOOL WebServerUserChangeNotify(void* pParam, astring strUser, astring str
 	SimpleCrypt crypt;
 	QString strDePasswd = strPasswd.c_str();
 
-	mg_modify_passwords_file(strPasswdPath.c_str(), "rapidvms.com", strUser.c_str(),
+	mg_modify_passwords_file(strPasswdPath.c_str(), "veolink.local", strUser.c_str(),
 		crypt.decryptToString(strDePasswd).toStdString().c_str());
 	return TRUE;
 	
@@ -115,7 +115,7 @@ int main(int argc, char *argv[])
 		"document_root", docRoot.c_str(), 
 		"listening_ports", PORT, 
 		"global_auth_file", strPasswdPath.c_str(),
-		"authentication_domain", "rapidvms.com",
+		"authentication_domain", "veolink.local",
 		0};
     
 	std::vector<std::string> cpp_options;
