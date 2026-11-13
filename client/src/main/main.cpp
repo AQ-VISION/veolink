@@ -40,9 +40,13 @@ Q_DECLARE_METATYPE (std::string)
 
 void LoadLangZH(QApplication &a)
 {
+	QString translationPath = QCoreApplication::applicationDirPath() + "/translations";
+#ifdef Q_OS_MAC
+	translationPath = QCoreApplication::applicationDirPath() + "/../Resources/translations";
+#endif
 	QTranslator *translator = new QTranslator(&a);
 	bool ok = translator->load("opencvr_zh.qm",
-		QCoreApplication::applicationDirPath() + "/translations");
+		translationPath);
 
 	if (ok)
 	{
@@ -51,7 +55,7 @@ void LoadLangZH(QApplication &a)
 	}
 	QTranslator *translatorVe = new QTranslator(&a);
 	ok = translatorVe->load("veuilib_zh.qm",
-		QCoreApplication::applicationDirPath() + "/translations");
+		translationPath);
 
 	if (ok)
 	{

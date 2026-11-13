@@ -3,17 +3,6 @@ CPROG=libvelib
 
 -include ../common.mk
 
-AS              = $(PRJ_CROSS)as
-LD              = $(PRJ_CROSS)ld
-CC              = $(PRJ_CROSS)gcc
-CPP             = $(PRJ_CROSS)g++
-AR              = $(PRJ_CROSS)ar
-NM              = $(PRJ_CROSS)nm
-STRIP           = $(PRJ_CROSS)strip
-OBJCOPY         = $(PRJ_CROSS)objcopy
-OBJDUMP         = $(PRJ_CROSS)objdump
-RANLIB          = $(PRJ_CROSS)ranlib
-
 ifeq ($(TARGET_OS),)
   ifeq ($(OS),Windows_NT)
     TARGET_OS = WIN32
@@ -39,9 +28,13 @@ ifneq ($(strip $(PRJ_CROSS)), )
 CFLAGS += -DARM_LINUX
 endif
 
-LIBS	= $(CPROG).so
+LIBS	= $(CPROG).$(SHARED_EXT)
 CFLAGS += -fpic
 CPPFLAGS += -fpic
+ifeq ($(strip $(VE_OS)),macos)
+CFLAGS += $(MACOS_CFLAGS)
+CPPFLAGS += $(MACOS_CXXFLAGS)
+endif
 PERM = -m 0755
 
 HDRS   = $(wildcard ./*.h) 
@@ -56,7 +49,6 @@ IFLAGS 	= -I. -I./include/utility\
 		-I./src/vdb\
 		-I./src/vplay\
 		-I./src/vrender\
-		-I./3rdparty/SDL2/include/\
 		-I./3rdparty/libyuv/include/\
 		-I../3rdparty/spdlog/include/\
 		-I../3rdparty/poco/Data/include\
@@ -66,16 +58,23 @@ IFLAGS 	= -I. -I./include/utility\
 		-I../xcmnlib/include/utility\
 		-I$(VE_PATH)/output/$(VE_INSTALL_DIR)/include\
 		
+ifeq ($(strip $(VE_OS)),macos)
+IFLAGS += -I$(VE_PATH)/output/$(VE_INSTALL_DIR)/include/SDL2
+else
+IFLAGS += -I./3rdparty/SDL2/include
+endif
 
 LDFLAGS +=  -L./3rdparty/libyuv/build-linux/\
 				-L$(VE_PATH)/output/$(VE_INSTALL_DIR)/lib\
                 -lcmnlib  -lyuv -lPocoDataSQLite -lPocoData  -lPocoFoundation -lPocoNet\
 		 -lavformat -lavcodec -lavutil -lswscale  -lcurl
  
-LDFLAGS += -fpic -lpthread -ldl -lstdc++ -lm   -lcrypto
+LDFLAGS += -fpic -lpthread -lm -lcrypto
 
 ifneq ($(strip $(VE_OS)), macos)
-LDFLAGS += -Wl,-Bdynamic -lcrypt 
+LDFLAGS += -Wl,-Bdynamic -lcrypt -ldl -lstdc++
+else
+LDFLAGS += $(MACOS_LDFLAGS) -Wl,-install_name,@rpath/$(LIBS)
 endif
 
 ifeq ($(strip $(PRJ_CROSS)), )
@@ -83,7 +82,7 @@ ifneq ($(strip $(VE_OS)), macos)
 LDFLAGS += -luuid -lz -lSDL2 
 else
 LDFLAGS += -lSDL2 -lz -lm -liconv -Wl,-framework,OpenGL  \
-	-Wl,-framework,ForceFeedback -lobjc -Wl,-framework,Cocoa \
+	-lobjc -Wl,-framework,Cocoa \
 	-Wl,-framework,Carbon -Wl,-framework,IOKit -Wl,-framework,CoreAudio \
 	-Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit -Wl,-framework,CoreVideo
 endif
@@ -120,7 +119,7 @@ ifeq ($(strip $(PRJ_CROSS)), )
 ifneq ($(strip $(VE_OS)), macos)
 all: libyuv SDL2 $(LIBS)
 else
-all: libyuv SDL2-macos $(LIBS) #modify for the MacOS ?
+all: libyuv SDL2-macos $(LIBS)
 endif
 else
 all: libyuv $(LIBS)
@@ -129,7 +128,7 @@ endif
 $(LIB_SOURCES): $(HDRS)
 
 $(LIBS): $(LIB_SOURCES)
-	$(CC) -shared -o  $(LIBS) $(LIB_SOURCES)  $(LDFLAGS)
+	$(CPP) $(SHARED_FLAGS) -o $(LIBS) $(LIB_SOURCES) $(LDFLAGS)
 ifneq ($(strip $(VE_OS)), macos)
 	$(OBJCOPY) --only-keep-debug $(CPROG).so $(CPROG).so.dbg && \
 	$(STRIP) -g $(CPROG).so && \
@@ -142,9 +141,6 @@ ifeq ($(MACHINE), x86_64)
 SDL2:
 	cd ./3rdparty/SDL2/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared CFLAGS="-fpic -fcommon";
 	$(MAKE) -C ./3rdparty/SDL2/ && $(MAKE) -C ./3rdparty/SDL2/ install;
-SDL2-macos:
-	cd ./3rdparty/SDL2-2.0.4-osx/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared CFLAGS="-fpic";
-	$(MAKE) -C ./3rdparty/SDL2-2.0.4-osx/ && $(MAKE) -C ./3rdparty/SDL2-2.0.4-osx/ install;	
 else
 SDL2:
 	cd ./3rdparty/SDL2/; chmod +x ./configure; ./configure --prefix=$(VE_PATH)/output/$(VE_INSTALL_DIR)/ --disable-shared;
@@ -152,10 +148,26 @@ SDL2:
 
 endif
 
+SDL2-macos:
+	mkdir -p ./3rdparty/SDL2-2.0.4-osx/build-$(VE_INSTALL_DIR)
+	cd ./3rdparty/SDL2-2.0.4-osx/build-$(VE_INSTALL_DIR) && sh ../configure --build=$(if $(filter arm64,$(VE_MACOS_ARCH)),aarch64,x86_64)-apple-darwin --prefix="$(VE_PATH)/output/$(VE_INSTALL_DIR)" --disable-shared --disable-dependency-tracking --disable-assembly --disable-haptic CC="$(CC)" CXX="$(CPP)" CFLAGS="-fPIC $(MACOS_CFLAGS)" CXXFLAGS="$(MACOS_CXXFLAGS)"
+	$(MAKE) -C ./3rdparty/SDL2-2.0.4-osx/build-$(VE_INSTALL_DIR) && $(MAKE) -C ./3rdparty/SDL2-2.0.4-osx/build-$(VE_INSTALL_DIR) install
+
+# Dependency libraries must exist before linking, including parallel builds.
+$(LIBS): libyuv
+ifeq ($(strip $(PRJ_CROSS)),)
+ifeq ($(strip $(VE_OS)),macos)
+$(LIBS): SDL2-macos
+$(LIB_SOURCES): | SDL2-macos
+else
+$(LIBS): SDL2
+endif
+endif
+
 libyuv:
 	#cd ./3rdparty/libyuv/build-linux;cmake -DCMAKE_CXX_FLAGS=-fPIC -DCMAKE_C_FLAGS=-fPIC ../;
 	#$(MAKE) -C ./3rdparty/libyuv/build-linux/ VERBOSE=1
-	$(MAKE) -C ./3rdparty/libyuv/ -f linux.mk CXX=$(CPP) 
+	$(MAKE) -C ./3rdparty/libyuv/ -f linux.mk CXX="$(CPP)" CXXFLAGS="-O2 -fPIC -Iinclude $(MACOS_CXXFLAGS) $(if $(filter arm64,$(VE_MACOS_ARCH)),-DLIBYUV_DISABLE_NEON,)" libyuv.a
 	cp ./3rdparty/libyuv/libyuv.a $(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/
 
 clean:distclean 
@@ -167,7 +179,7 @@ ifeq ($(strip $(PRJ_CROSS)), )
 ifneq ($(strip $(VE_OS)), macos)
 	$(MAKE) -C ./3rdparty/SDL2/ distclean
 else
-	$(MAKE) -C ./3rdparty/SDL2-2.0.4-osx/ distclean
+	rm -rf ./3rdparty/SDL2-2.0.4-osx/build-$(VE_INSTALL_DIR)
 endif
 endif
 	rm -rf ./3rdparty/libyuv/build-linux/*

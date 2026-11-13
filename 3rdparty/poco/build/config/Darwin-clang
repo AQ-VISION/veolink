@@ -16,7 +16,7 @@
 #
 LINKMODE ?= SHARED
 
-POCO_TARGET_OSARCH ?= x86_64
+POCO_TARGET_OSARCH ?= $(shell uname -m)
 POCO_HOST_OSARCH   := $(POCO_TARGET_OSARCH)
 ARCHFLAGS          ?= -arch $(POCO_TARGET_OSARCH)
 
@@ -52,7 +52,7 @@ SHAREDLIBLINKEXT = .dylib
 # Compiler and Linker Flags
 #
 CFLAGS          = $(ARCHFLAGS)
-CXXFLAGS        = $(ARCHFLAGS) -Wall -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wno-unneeded-internal-declaration
+CXXFLAGS        = $(ARCHFLAGS) -std=c++11 -stdlib=libc++ -Wall -Wno-sign-compare -Wno-unused-variable -Wno-unused-function -Wno-unneeded-internal-declaration
 LINKFLAGS       = $(ARCHFLAGS)
 SHLIBFLAGS      = $(ARCHFLAGS)
 DYLIBFLAGS      = $(ARCHFLAGS)
@@ -62,11 +62,11 @@ STATICOPT_LINK  =
 SHAREDOPT_CC    = -fPIC 
 SHAREDOPT_CXX   = -fPIC
 SHAREDOPT_LINK  = 
-DEBUGOPT_CC     = -O0 -g -gdwarf-2 -fasm-blocks -D_DEBUG=$(DEBUGLEVEL)
-DEBUGOPT_CXX    = -O0 -g -gdwarf-2 -fasm-blocks -D_DEBUG=$(DEBUGLEVEL) 
+DEBUGOPT_CC     = -O0 -g -gdwarf-2 -D_DEBUG=$(DEBUGLEVEL)
+DEBUGOPT_CXX    = -O0 -g -gdwarf-2 -D_DEBUG=$(DEBUGLEVEL)
 DEBUGOPT_LINK   =
-RELEASEOPT_CC   = -DNDEBUG -Os -fasm-blocks
-RELEASEOPT_CXX  = -DNDEBUG -O2 -fasm-blocks
+RELEASEOPT_CC   = -DNDEBUG -Os
+RELEASEOPT_CXX  = -DNDEBUG -O2
 RELEASEOPT_LINK =
 
 #

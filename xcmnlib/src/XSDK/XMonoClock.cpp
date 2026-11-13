@@ -25,23 +25,6 @@ using namespace XSDK;
 
 static uint64_t NanoSec = 1000000000;
 
-#ifdef __MACH__
-#include <mach/mach_time.h>
-#define CLOCK_REALTIME 0
-#define CLOCK_MONOTONIC 0
-int clock_gettime(int clk_id, struct timespec *t){
-    mach_timebase_info_data_t timebase;
-    mach_timebase_info(&timebase);
-    uint64_t time;
-    time = mach_absolute_time();
-    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
-    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
-    t->tv_sec = seconds;
-    t->tv_nsec = nseconds;
-    return 0;
-}
-#endif
-
 static uint64_t MonotonicFrequency()
 {
     uint64_t freq;
@@ -57,7 +40,7 @@ static uint64_t MonotonicFrequency()
         X_THROW(("Was not able to get monotonic clock frequency: %d", ret));
     freq = NanoSec / ((uint64_t)cfreq.tv_sec * NanoSec + (uint64_t)cfreq.tv_nsec);
 #else
-    freq = 0;
+    freq = NanoSec;
 #endif
 #else
     #error ">> Unknown OS!"

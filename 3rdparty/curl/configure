@@ -20975,7 +20975,7 @@ else
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdlib.h> /* for exit() */
-main()
+int main(void)
 {
  if (socket(AF_INET6, SOCK_STREAM, 0) < 0)
    exit(1);
@@ -26826,7 +26826,7 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-main()
+int main(void)
 {
   return 0;
 }
@@ -42613,4 +42613,3 @@ cat <<EOM
 EOM
 
 fi
-

@@ -35,8 +35,6 @@
   #include <sys/errno.h>
 #ifndef __APPLE__
   #include <asm-generic/errno.h>
-#else
-  #define MSG_NOSIGNAL 0x2000 /* don't raise SIGPIPE */
 #endif
   #include <ifaddrs.h>
   #include <poll.h>

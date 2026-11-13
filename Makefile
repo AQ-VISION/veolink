@@ -1,5 +1,9 @@
 $(eval version=$(shell grep "define VE_VERSION" include/config/confver.hpp | sed 's|.*VERSION "\(.*\)"|\1|g'))
+QMAKE ?= qmake
 REL=VeoLink-CE-$(version)-$(VE_OS)-$(VE_VER)-$(VE_ARCH)bit
+ifeq ($(strip $(VE_OS)),macos)
+REL=VeoLink-CE-$(version)-$(VE_INSTALL_DIR)
+endif
 
 ifeq ($(strip $(VE_CROSS_COMPILER)), )
 subdirs=3rdparty xcmnlib velib veuilib vecvr client
@@ -12,12 +16,20 @@ endif
 
 
 all: prepare
-	for d in $(subdirs); do (cd $$d; (if  test -e "Makefile"; then $(MAKE) $(MFLAGS); fi;) ); done
+	@set -e; for d in $(subdirs); do $(MAKE) -C "$$d"; done
 
 app: prepare
-	for d in $(appsubdirs); do (cd $$d; (if  test -e "Makefile"; then $(MAKE) $(MFLAGS); fi;) ); done
+	@set -e; for d in $(appsubdirs); do $(MAKE) -C "$$d"; done
 
-prepare:
+check-macos:
+ifeq ($(strip $(VE_OS)),macos)
+	@QMAKE="$(QMAKE)" sh ./scripts/check-macos.sh
+endif
+
+test-macos:
+	bash ./scripts/test-macos-build.sh
+
+prepare: check-macos
 	mkdir -p ./output/$(VE_INSTALL_DIR)/lib
 ifneq ($(strip $(VE_OS)), macos)
 	chmod +x ./output/linux/*.sh
@@ -32,8 +44,7 @@ endif
 linkprocess:
 ifneq ($(strip $(VE_OS)), macos)	
 else
-	chmod +x ./maclink.sh
-	./maclink.sh
+	bash ./maclink.sh
 endif
 
 
@@ -59,6 +70,13 @@ disttest:
 	mv ./libve* libcmnlib.so libcover.so ./output/$(VE_INSTALL_DIR)/lib/
 	strip ./output/$(VE_INSTALL_DIR)/lib/*.so
 
+ifeq ($(strip $(VE_OS)),macos)
+rel: linkprocess
+	rm -rf "./$(REL)"
+	mkdir -p "./$(REL)"
+	cp -R "./output/$(VE_INSTALL_DIR)/VeoLinkClient.app" "./output/$(VE_INSTALL_DIR)/VeoLinkServer.app" "./$(REL)/"
+	tar zcvf "$(REL).tar.gz" "$(REL)"
+else
 rel: linkprocess
 	echo $(REL)
 	rm -rf ./$(REL)
@@ -110,5 +128,8 @@ endif
 	echo "Create zip file"
 	#zip -r $(REL).zip $(REL) 
 	tar zcvf $(REL).tar.gz $(REL)
+endif
+
+.PHONY: all app prepare check-macos test-macos linkprocess cleanapp clean install distclean disttest rel
 	
 	

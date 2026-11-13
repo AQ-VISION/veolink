@@ -94,10 +94,14 @@ unix:!macx {
         LIBS += \
         -lrt
     }
+include(../../macos.pri)
+macx {
+    CONFIG += app_bundle
+    QMAKE_INFO_PLIST = ../../output/macos/VeoLinkServer.app/Contents/Info.plist
+}
 DEPENDPATH += .
 MOC_DIR += ./GeneratedFiles/debug
 OBJECTS_DIR += debug
 UI_DIR += ./GeneratedFiles
 RCC_DIR += ./GeneratedFiles
 include(../prj_linux/vecvr.pri)
-

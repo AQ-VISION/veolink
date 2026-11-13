@@ -1,14 +1,4 @@
 -include ../../../common.mk
-AS              = $(PRJ_CROSS)as
-LD              = $(PRJ_CROSS)ld
-CC              = $(PRJ_CROSS)gcc
-CPP             = $(PRJ_CROSS)g++
-AR              = $(PRJ_CROSS)ar
-NM              = $(PRJ_CROSS)nm
-STRIP           = $(PRJ_CROSS)strip
-OBJCOPY         = $(PRJ_CROSS)objcopy
-OBJDUMP         = $(PRJ_CROSS)objdump
-RANLIB          = $(PRJ_CROSS)ranlib
 
 ifeq ($(TARGET_OS),)
   ifeq ($(OS),Windows_NT)
@@ -76,7 +66,12 @@ ifeq ($(TARGET_OS),LINUX)
   CAN_INSTALL = 1
 endif
 
-SHARED_LIB = so
+SHARED_LIB = $(SHARED_EXT)
+ifeq ($(strip $(VE_OS)),macos)
+CFLAGS += $(MACOS_CFLAGS)
+CXXFLAGS += -std=c++11 $(MACOS_CXXFLAGS)
+LDFLAGS += $(MACOS_LDFLAGS) -Wl,-install_name,@rpath/lib$(CPROG).$(SHARED_LIB)
+endif
 
 all: build
 
@@ -91,7 +86,7 @@ slib: lib$(CPROG).$(SHARED_LIB)
 clean:
 	$(RMRF) $(BUILD_DIR)
 	$(RMRF) lib$(CPROG).a
-	$(RMRF) lib$(CPROG).so
+	$(RMRF) lib$(CPROG).$(SHARED_LIB)
 	$(RMRF) $(CPROG)
 
 distclean: clean
@@ -102,9 +97,9 @@ lib$(CPROG).a: $(LIB_OBJECTS)
 	@$(RMF) $@
 	ar cq $@ $(LIB_OBJECTS)
 
-lib$(CPROG).so: CFLAGS += -fPIC
-lib$(CPROG).so: $(LIB_OBJECTS)
-	$(CPP) -shared -o $@ $(CFLAGS) $(LIB_OBJECTS) $(LDFLAGS) 
+lib$(CPROG).$(SHARED_LIB): CFLAGS += -fPIC
+lib$(CPROG).$(SHARED_LIB): $(LIB_OBJECTS)
+	$(CPP) $(SHARED_FLAGS) -o $@ $(CFLAGS) $(LIB_OBJECTS) $(LDFLAGS)
 
 
 $(CPROG): $(BUILD_OBJECTS) $(BUILD_RESOURCES)

@@ -1082,7 +1082,7 @@ AC_HELP_STRING([--disable-ipv6],[Disable IPv6 support]),
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdlib.h> /* for exit() */
-main()
+int main(void)
 {
  if (socket(AF_INET6, SOCK_STREAM, 0) < 0)
    exit(1);
@@ -3703,4 +3703,3 @@ cat <<EOM
 EOM
 
 fi
-

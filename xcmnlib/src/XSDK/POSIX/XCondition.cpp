@@ -21,23 +21,6 @@ using namespace XSDK;
 #define MICROS_IN_SECOND 1000000
 #define NANOS_IN_SECOND 1000000000
 
-#ifdef __MACH__
-#include <mach/mach_time.h>
-#define CLOCK_REALTIME 0
-#define CLOCK_MONOTONIC 0
-static int clock_gettime(int clk_id, struct timespec *t){
-    mach_timebase_info_data_t timebase;
-    mach_timebase_info(&timebase);
-    uint64_t time;
-    time = mach_absolute_time();
-    double nseconds = ((double)time * (double)timebase.numer)/((double)timebase.denom);
-    double seconds = ((double)time * (double)timebase.numer)/((double)timebase.denom * 1e9);
-    t->tv_sec = seconds;
-    t->tv_nsec = nseconds;
-    return 0;
-}
-#endif
-
 XCondition::XCondition( XMutex& lok ) :
     _cond(),
     _attr(),
@@ -78,10 +61,20 @@ bool XCondition::WaitUntil( uint64_t then )
 {
     uint64_t freq = XMonoClock::GetFrequency();
 
+#ifdef __APPLE__
+    // Darwin condition variables use realtime; wait for a monotonic duration instead.
+    const uint64_t now = XMonoClock::GetTime();
+    then = then > now ? then - now : 0;
+#endif
+
     struct timespec timeout = { (time_t)(then / freq),
                                 (time_t)ConvertTimeScale( (then % freq), freq, NANOS_IN_SECOND ) };
 
+#ifdef __APPLE__
+    int err = pthread_cond_timedwait_relative_np( &_cond, &_lok._lok, &timeout );
+#else
     int err = pthread_cond_timedwait( &_cond, &_lok._lok, &timeout );
+#endif
 
     if( err == ETIMEDOUT )
         return true;

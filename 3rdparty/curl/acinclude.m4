@@ -2471,7 +2471,7 @@ AC_DEFUN([CURL_VERIFY_RUNTIMELIBS], [
     dnl point also is available run-time!
     AC_MSG_CHECKING([run-time libs availability])
     AC_TRY_RUN([
-main()
+int main(void)
 {
   return 0;
 }

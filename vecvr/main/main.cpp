@@ -37,6 +37,7 @@
 
 Factory *gFactory = NULL;
 astring gAppdir;
+astring gAuthFile;
 
 #include <Poco/AutoPtr.h>
 #include <Poco/Util/SystemConfiguration.h>
@@ -51,7 +52,7 @@ astring gAppdir;
 
 static BOOL WebServerUserChangeNotify(void* pParam, astring strUser, astring strPasswd)
 {
-	astring strPasswdPath = gAppdir + ".htpasswd";
+	astring strPasswdPath = gAuthFile;
 	SimpleCrypt crypt;
 	QString strDePasswd = strPasswd.c_str();
 
@@ -77,6 +78,7 @@ int main(int argc, char *argv[])
 	VidEnv env;
 	env.init(argc2, argv2);
 	env.run();
+	const bool localOnly = VidEnv::IsLocalOnly();
 
 	astring strLoggerPath = env.GetAppConfPath("logs");
 
@@ -104,7 +106,7 @@ int main(int argc, char *argv[])
 	gAppdir = env.GetAppDir();
 	
 	astring docRoot = env.GetAppDir()+ "www";
-	astring strPasswdPath = env.GetAppDir() + ".htpasswd";
+	gAuthFile = localOnly ? env.GetAppConfPath("config") + ".htpasswd" : env.GetAppDir() + ".htpasswd";
 
 	/* set htpasswd, when start a  */
 	astring strPasswd = "admin";
@@ -113,8 +115,8 @@ int main(int argc, char *argv[])
 	
 	const char *options[] = {
 		"document_root", docRoot.c_str(), 
-		"listening_ports", PORT, 
-		"global_auth_file", strPasswdPath.c_str(),
+		"listening_ports", localOnly ? "127.0.0.1:9080" : PORT,
+		"global_auth_file", gAuthFile.c_str(),
 		"authentication_domain", "veolink.local",
 		0};
     
@@ -131,8 +133,11 @@ int main(int argc, char *argv[])
 	pEventServer->Init();
 
 	/* Init Event framework */
-	VEventMgr *pEventMgr = new VEventMgr(*pFactory, *pEventServer);
-	pEventMgr->Init();
+	if (!localOnly)
+	{
+		VEventMgr *pEventMgr = new VEventMgr(*pFactory, *pEventServer);
+		pEventMgr->Init();
+	}
 
 	VEWebServer *  pWebServer = new VEWebServer(cpp_options, *pFactory, *pEventServer);
 	
@@ -141,10 +146,13 @@ int main(int argc, char *argv[])
 	pFactory->start();
 	
 #ifndef _WIN32
-	/* Init media server */
-	VEMediaServer::InitMediaServer();
-	/* Start Media server */
-	VEMediaServer * pMediaServer = new VEMediaServer(*pFactory);
+	if (!localOnly)
+	{
+		/* Init media server */
+		VEMediaServer::InitMediaServer();
+		/* Start Media server */
+		VEMediaServer * pMediaServer = new VEMediaServer(*pFactory);
+	}
 #endif
 #if 0
 	VONVIFDisMgr *pDisMgr = new VONVIFDisMgr();

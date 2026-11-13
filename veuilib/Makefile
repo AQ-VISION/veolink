@@ -1,14 +1,4 @@
 -include ../common.mk
-AS              = $(PRJ_CROSS)as
-LD              = $(PRJ_CROSS)ld
-CC              = $(PRJ_CROSS)gcc
-CPP             = $(PRJ_CROSS)g++
-AR              = $(PRJ_CROSS)ar
-NM              = $(PRJ_CROSS)nm
-STRIP           = $(PRJ_CROSS)strip
-OBJCOPY         = $(PRJ_CROSS)objcopy
-OBJDUMP         = $(PRJ_CROSS)objdump
-RANLIB          = $(PRJ_CROSS)ranlib
 
 ifeq ($(TARGET_OS),)
   ifeq ($(OS),Windows_NT)
@@ -37,9 +27,9 @@ LIBS=libveuilib
 veuilib_build:
 	$(MAKE) -C ./onvifcpplib;
 ifeq ($(strip $(PRJ_CROSS)), )
-	cd ./prj_linux/ ; qmake .;
+	cd ./prj_linux/ && $(QMAKE) .
 else
-	cd ./prj_linux/ ; qmake . CONFIG+=ARM_LINUX;
+	cd ./prj_linux/ && $(QMAKE) . CONFIG+=ARM_LINUX
 endif
 	$(MAKE) -C ./prj_linux;
 	rm -rf ../linux/lib/libveuilib*
@@ -53,7 +43,7 @@ endif
 
 veuilib_clean:
 	$(MAKE) -C ./onvifcpplib clean;
-	cd ./prj_linux/ ; qmake .;
+	cd ./prj_linux/ && $(QMAKE) .
 	$(MAKE) -C ./prj_linux/ clean;
 	rm -rf ./prj_linux/libveuilib.*
 	

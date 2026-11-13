@@ -6,17 +6,6 @@ CPROG=libcmnlib
 
 -include ../common.mk
 
-AS              = $(PRJ_CROSS)as
-LD              = $(PRJ_CROSS)ld
-CC              = $(PRJ_CROSS)gcc
-CPP             = $(PRJ_CROSS)g++
-AR              = $(PRJ_CROSS)ar
-NM              = $(PRJ_CROSS)nm
-STRIP           = $(PRJ_CROSS)strip
-OBJCOPY         = $(PRJ_CROSS)objcopy
-OBJDUMP         = $(PRJ_CROSS)objdump
-RANLIB          = $(PRJ_CROSS)ranlib
-
 ifeq ($(CPROG_OS),)
   ifeq ($(OS),Windows_NT)
     CPROG_OS = WIN32
@@ -45,9 +34,13 @@ ifneq ($(strip $(PRJ_CROSS)), )
 CFLAGS += -DARM_LINUX
 endif
 
-LIBS	= $(CPROG).so
+LIBS	= $(CPROG).$(SHARED_EXT)
 CFLAGS += -fpic
 CPPFLAGS += -fpic
+ifeq ($(strip $(VE_OS)),macos)
+CFLAGS += $(MACOS_CFLAGS)
+CPPFLAGS += $(MACOS_CXXFLAGS)
+endif
 PERM = -m 0755
 
 HDRS   = $(wildcard ./*.h) 
@@ -82,9 +75,11 @@ IFLAGS 	= -I. -I./include/utility\
 LDFLAGS += -L$(VE_PATH)/output/$(VE_INSTALL_DIR)/lib\
 		-lPocoDataSQLite -lPocoData  -lPocoFoundation -lPocoNet\
 		-llive555 -lavfilter -lavformat -lavcodec -lavutil -lswscale 
-LDFLAGS += -fpic -lpthread -ldl -lstdc++ -lm  -lcrypto -lssl
+LDFLAGS += -fpic -lpthread -lm -lcrypto -lssl
 ifneq ($(strip $(VE_OS)), macos)
-LDFLAGS += -Wl,-Bdynamic 
+LDFLAGS += -Wl,-Bdynamic -ldl -lstdc++
+else
+LDFLAGS += $(MACOS_LDFLAGS) -Wl,-install_name,@rpath/$(LIBS)
 endif
 ifeq ($(strip $(PRJ_CROSS)), )
 ifneq ($(strip $(VE_OS)), macos)
@@ -221,6 +216,13 @@ LIB_SOURCES =   ./src/ffkit/argb24_to_yuv420p.o\
 				./src/utility/debug.o\
 				./src/utility/libcli.o\
 				./src/utility/utility.o\
+				./src/rapidrtsp/rapidrtsp.o\
+				./src/rapidrtsp/rapidrtsplog.o\
+				./src/rapidmedia/rapidaudiodec.o\
+				./src/rapidmedia/rapiddecsink.o\
+				./src/rapidmedia/rapidffmpegdec.o\
+				./src/rapidmedia/rapidmedia.o\
+				./src/rapidmedia/rapidmediadata.o\
 				../onvif/include/video/h5s_h264_sink.o\
 				../onvif/include/video/h5slib.o\
 				../onvif/include/video/h264_bit_reader.o\
@@ -236,7 +238,7 @@ all:$(LIBS)
 $(LIB_SOURCES): $(HDRS)
 
 $(LIBS): $(LIB_SOURCES)
-	$(CC) -shared -o  $(LIBS) $(LIB_SOURCES)  $(LDFLAGS)
+	$(CPP) $(SHARED_FLAGS) -o $(LIBS) $(LIB_SOURCES) $(LDFLAGS)
 ifneq ($(strip $(VE_OS)), macos)
 	$(OBJCOPY) --only-keep-debug $(CPROG).so $(CPROG).so.dbg && $(STRIP) -g $(CPROG).so && $(OBJCOPY) --add-gnu-debuglink=$(CPROG).so.dbg $(CPROG).so
 	$(STRIP) $(LIBS)

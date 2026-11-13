@@ -11,6 +11,8 @@ xcmnlib/prj_linux/Makefile
 */prj_linux/moc_*.o
 */prj_linux/qrc_*.cpp
 */prj_linux/*.o
+*/prj_linux/*.app/
+*/prj_linux/*.prl
 
 # Build output tree (populated by `make install` of subprojects)
 output/*/bin/
@@ -103,6 +105,7 @@ stamp-h*
 3rdparty/live555/testProgs/test*
 3rdparty/live555/testProgs/vobStreamer
 3rdparty/openssl/Makefile
+3rdparty/openssl/Makefile.bak
 3rdparty/openssl/apps/CA.pl*
 3rdparty/openssl/apps/md4.c
 3rdparty/openssl/apps/openssl
@@ -118,6 +121,7 @@ stamp-h*
 3rdparty/openssl/test/*
 3rdparty/openssl/tools/c_rehash*
 3rdparty/protobuf/cmake/linux/
+3rdparty/protobuf/cmake/macos-*/
 3rdparty/poco/**/bin/
 3rdparty/poco/lib/
 3rdparty/poco/*/obj/
@@ -129,6 +133,7 @@ velib/3rdparty/SDL2/build/
 velib/3rdparty/SDL2/gen/
 velib/3rdparty/SDL2/sdl2-config*
 velib/3rdparty/SDL2/sdl2.pc
+velib/3rdparty/SDL2-2.0.4-osx/build-macos-*/
 velib/3rdparty/libyuv/convert
 
 # Versioned installation/package output (the legacy output/linux scripts stay tracked)

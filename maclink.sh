@@ -1,151 +1,87 @@
-#!/bin/sh
-export ve_libavcodec=libavcodec.57.dylib
-export ve_libavformat=libavformat.57.dylib 
-export ve_libavutil=libavutil.55.dylib
-export ve_libavfilter=libavfilter.6.dylib
-export ve_libswscale=libswscale.4.dylib
-export ve_libswresample=libswresample.2.dylib
+#!/bin/bash
+set -euo pipefail
 
-export ve_libPocoFoundation=libPocoFoundation.24.dylib
-export ve_libPocoDataSQLite=libPocoDataSQLite.24.dylib
-export ve_libPocoData=libPocoData.24.dylib
-export ve_libPocoUtil=libPocoUtil.24.dylib
-export ve_libPocoXML=libPocoXML.24.dylib
-export ve_libPocoJSON=libPocoJSON.24.dylib
+: "${VE_PATH:?Source rules-macos.mk first.}"
+: "${VE_INSTALL_DIR:?Source rules-macos.mk first.}"
+: "${VE_MACOS_ARCH:?Source rules-macos.mk first.}"
+install_dir="$VE_PATH/output/$VE_INSTALL_DIR"
+qt_bin="$("${QMAKE:-qmake}" -query QT_HOST_BINS)"
+qt_lib="$("${QMAKE:-qmake}" -query QT_INSTALL_LIBS)"
+macdeployqt="${MACDEPLOYQT:-$qt_bin/macdeployqt}"
+[ -x "$macdeployqt" ] || { printf 'macdeployqt not found: %s\n' "$macdeployqt" >&2; exit 1; }
 
-export ve_libcurl=libcurl.4.dylib
+# Resolve and bundle non-system dylibs as well as the Qt frameworks.
+deploy_binary() {
+    local binary="$1" original="$2" frameworks="$3"
+    local dependency relative source name destination directory rpath seen
+    for seen in "${deployed[@]}"; do [ "$seen" != "$binary" ] || return 0; done
+    deployed+=("$binary")
+    while IFS= read -r dependency; do
+        case "$dependency" in
+            /System/Library/*|/usr/lib/*) continue ;;
+            *.framework/*) continue ;; # macdeployqt deploys the Qt frameworks.
+        esac
+        source=
+        case "$dependency" in
+            @loader_path/*) source="$(dirname "$original")/${dependency#@loader_path/}" ;;
+            @executable_path/*) source="$(dirname "$binary")/${dependency#@executable_path/}" ;;
+            @rpath/*) relative="${dependency#@rpath/}" ;;
+            /*) source="$dependency" ;;
+            *) relative="$dependency" ;;
+        esac
+        if [ -z "$source" ]; then
+            for directory in "$install_dir/lib" "$frameworks" "$qt_lib"; do
+                if [ -f "$directory/$relative" ]; then source="$directory/$relative"; break; fi
+            done
+        fi
+        [ -f "$source" ] || { printf 'Unresolved dependency %s in %s\n' "$dependency" "$binary" >&2; exit 1; }
+        name="$(basename "$source")"
+        destination="$frameworks/$name"
+        seen=
+        for directory in "${deployed[@]}"; do
+            if [ "$directory" = "$destination" ]; then seen=yes; break; fi
+        done
+        if [ -z "$seen" ]; then
+            if [ "$source" != "$destination" ]; then
+                cp -L "$source" "$destination"
+            fi
+            chmod u+w "$destination"
+            xcrun lipo -verify_arch "$VE_MACOS_ARCH" "$destination"
+            install_name_tool -id "@rpath/$name" "$destination"
+            deploy_binary "$destination" "$source" "$frameworks"
+        fi
+        install_name_tool -change "$dependency" "@rpath/$name" "$binary"
+    done < <(otool -L "$binary" | sed '1d; s/^[[:space:]]*//; s/ (compatibility version.*$//')
 
-#Change VeoLinkClient
-cd $VE_PATH/output/$VE_INSTALL_DIR/VeoLinkClient.app/Contents/MacOS
+    # Remove build-machine search paths from the deployable binaries.
+    while IFS= read -r rpath; do
+        case "$rpath" in
+            /*) install_name_tool -delete_rpath "$rpath" "$binary" ;;
+        esac
+    done < <(otool -l "$binary" | awk '/cmd LC_RPATH/ { getline; getline; print $2 }')
+    rpath='@loader_path'
+    if [ "$(dirname "$binary")" != "$frameworks" ]; then rpath='@executable_path/../Frameworks'; fi
+    if ! otool -l "$binary" | awk '/cmd LC_RPATH/ { getline; getline; print $2 }' | grep -Fxq "$rpath"; then
+        install_name_tool -add_rpath "$rpath" "$binary"
+    fi
+}
 
-install_name_tool -add_rpath @loader_path/../../../lib VeoLinkClient
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so VeoLinkClient
-
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec VeoLinkClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat VeoLinkClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil VeoLinkClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter VeoLinkClient
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale VeoLinkClient
-install_name_tool -change libvelib.so @rpath/libvelib.so VeoLinkClient
-install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib VeoLinkClient
-
-
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation VeoLinkClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite VeoLinkClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData VeoLinkClient
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil VeoLinkClient
-
-#Change VeoLinkServer
-cd $VE_PATH/output/$VE_INSTALL_DIR/VeoLinkServer.app/Contents/MacOS
-install_name_tool -add_rpath @loader_path/../../../lib VeoLinkServer
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so VeoLinkServer
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec VeoLinkServer
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat VeoLinkServer
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil VeoLinkServer
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter VeoLinkServer
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale VeoLinkServer
-install_name_tool -change libvelib.so @rpath/libvelib.so VeoLinkServer
-install_name_tool -change libveuilib.dylib @rpath/libveuilib.dylib VeoLinkServer
-
-
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation VeoLinkServer
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite VeoLinkServer
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData VeoLinkServer
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil VeoLinkServer
-
-#Change Lib 
-cd $VE_PATH/output/$VE_INSTALL_DIR/lib
-
-#libcmnlib.so
-install_name_tool -change liblive555.so @rpath/liblive555.so libcmnlib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec libcmnlib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat libcmnlib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil libcmnlib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter libcmnlib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale libcmnlib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation libcmnlib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite libcmnlib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData libcmnlib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil libcmnlib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/libPocoNet.24.dylib @rpath/libPocoNet.24.dylib libcmnlib.so
-
-
-#libvelib.so 
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so libvelib.so 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec libvelib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat libvelib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil libvelib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter libvelib.so
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale libvelib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation libvelib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite libvelib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData libvelib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil libvelib.so
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/libPocoNet.24.dylib @rpath/libPocoNet.24.dylib libvelib.so
-
-#$ve_libcurl
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR/lib/$ve_libcurl @rpath/$ve_libcurl libvelib.so
-
-#libveuilib.dylib 
-install_name_tool -change libcmnlib.so @rpath/libcmnlib.so libveuilib.dylib
-install_name_tool -change libvelib.so @rpath/libvelib.so libveuilib.dylib 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec libveuilib.dylib 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat libveuilib.dylib 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil libveuilib.dylib 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavfilter @rpath/$ve_libavfilter libveuilib.dylib 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale libveuilib.dylib 
-
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoDataSQLite @rpath/$ve_libPocoDataSQLite libveuilib.dylib 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData libveuilib.dylib 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation libveuilib.dylib 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoUtil @rpath/$ve_libPocoUtil libveuilib.dylib 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/libPocoNet.24.dylib @rpath/libPocoNet.24.dylib libveuilib.dylib 
-
-
-#$ve_libPocoDataSQLite 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoData @rpath/$ve_libPocoData $ve_libPocoDataSQLite 
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation $ve_libPocoDataSQLite 
-
-#$ve_libPocoData
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation $ve_libPocoData 
-
-#libPocoNet.24.dylib
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation libPocoNet.24.dylib 
-
-#$ve_libPocoUtil
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation $ve_libPocoUtil
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoXML @rpath/$ve_libPocoXML $ve_libPocoUtil
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoJSON @rpath/$ve_libPocoJSON $ve_libPocoUtil
-
-#$ve_libPocoXML
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation $ve_libPocoXML
-
-#$ve_libPocoJSON
-install_name_tool -change $VE_PATH/3rdparty/poco/lib/Darwin/x86_64/$ve_libPocoFoundation @rpath/$ve_libPocoFoundation $ve_libPocoJSON
-
-
-#$ve_libavfilter 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec $ve_libavfilter  
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswscale @rpath/$ve_libswscale $ve_libavfilter  
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavformat @rpath/$ve_libavformat $ve_libavfilter 
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil $ve_libavfilter
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswresample @rpath/$ve_libswresample $ve_libavfilter
-
-#$ve_libswscale
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil $ve_libswscale
-
-#$ve_libavformat
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavcodec @rpath/$ve_libavcodec $ve_libavformat
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswresample @rpath/$ve_libswresample $ve_libavformat
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil $ve_libavformat
-
-#$ve_libavcodec
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswresample @rpath/$ve_libswresample $ve_libavcodec
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil $ve_libavcodec
-
-#$ve_libavutil
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libswresample @rpath/$ve_libswresample $ve_libavutil
-
-#$ve_libswresample
-install_name_tool -change $VE_PATH/output/$VE_INSTALL_DIR//lib/$ve_libavutil @rpath/$ve_libavutil $ve_libswresample
-
+for name in VeoLinkClient VeoLinkServer; do
+    deployed=("")
+    app="$install_dir/$name.app"
+    binary="$app/Contents/MacOS/$name"
+    [ -f "$binary" ] || { printf 'Build %s before packaging.\n' "$name" >&2; exit 1; }
+    xcrun lipo -verify_arch "$VE_MACOS_ARCH" "$binary"
+    "$macdeployqt" "$app" -libpath="$install_dir/lib" -always-overwrite
+    frameworks="$app/Contents/Frameworks"
+    mkdir -p "$frameworks"
+    deploy_binary "$binary" "$binary" "$frameworks"
+    resources="$app/Contents/Resources/translations"
+    mkdir -p "$resources"
+    for translation in "$VE_PATH"/client/src/main/translations/*.qm "$VE_PATH"/veuilib/src/translations/*.qm; do
+        [ ! -f "$translation" ] || cp "$translation" "$resources/"
+    done
+    # install_name_tool invalidates arm64 signatures; sign local builds again.
+    codesign --force --deep --sign - "$app"
+    codesign --verify --deep --strict "$app"
+done

@@ -48,10 +48,10 @@
 
     #include "sys/types.h"
 
-    #if __WORDSIZE == 64
+    #if UINTPTR_MAX == UINT64_MAX
         #undef  IS_64BIT
         #define IS_64BIT
-    #elif __WORDSIZE == 32
+    #elif UINTPTR_MAX == UINT32_MAX
         #undef  IS_32BIT
         #define IS_32BIT
     #else

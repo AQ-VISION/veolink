@@ -136,7 +136,8 @@ mg_static_assert(sizeof(void *) >= sizeof(int), "data type size check");
 #endif
 
 
-#ifdef __MACH__ /* Apple OSX section */
+/* Modern macOS provides clock_gettime; keep the shim only for older targets. */
+#if defined(__MACH__) && (!defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) || __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ < 101200)
 
 #ifdef __clang__
 /* Avoid warnings for Xopen 7.00 and higher */

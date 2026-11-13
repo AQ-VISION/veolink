@@ -63,7 +63,6 @@ LIBS += \
     -L"./../../3rdparty/onvifc/prj_linux/lib" \
     -L"./../../3rdparty/leveldb/" \
     -L"./../../veuilib/rtspserver/lib/linux" \
-    -L"./../onvifcpplib/lib/linux/" \
     -L../../output/$$(VE_INSTALL_DIR)/lib \
     -L../../output/$$(VE_INSTALL_DIR)/lib/x86_64-linux-gnu \
     -lcmnlib\
@@ -91,6 +90,10 @@ DEFINES +=ARM_LINUX
 
     }
 }
+
+include(../../macos.pri)
+macx: CONFIG -= plugin
+!macx: LIBS += -L"./../onvifcpplib/lib/linux/"
 
 
 DEPENDPATH += .

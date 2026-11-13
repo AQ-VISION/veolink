@@ -3,17 +3,6 @@
 DEBUG_BUILD=no
 CPROG=libonvifcpplib
 
-AS              = $(PRJ_CROSS)as
-LD              = $(PRJ_CROSS)ld
-CC              = $(PRJ_CROSS)gcc
-CPP             = $(PRJ_CROSS)g++
-AR              = $(PRJ_CROSS)ar
-NM              = $(PRJ_CROSS)nm
-STRIP           = $(PRJ_CROSS)strip
-OBJCOPY         = $(PRJ_CROSS)objcopy
-OBJDUMP         = $(PRJ_CROSS)objdump
-RANLIB          = $(PRJ_CROSS)ranlib
-
 ifeq ($(TARGET_OS),)
   ifeq ($(OS),Windows_NT)
     TARGET_OS = WIN32
@@ -32,8 +21,14 @@ ifeq ($(TARGET_OS),)
 endif
 
 BUILD_DIR     = ./lib/linux/
+ifeq ($(strip $(VE_OS)),macos)
+BUILD_DIR = ./lib/$(VE_INSTALL_DIR)
+endif
 CFLAGS	=  -DLINUX -fPIC 
 CFLAGS	+= -DWITH_OPENSSL -DWITH_DOM -DWITH_PURE_VIRTUAL -DWITH_NONAMESPACES 
+ifeq ($(strip $(VE_OS)),macos)
+CFLAGS += -std=c++11 $(MACOS_CXXFLAGS)
+endif
 LIBS	= $(BUILD_DIR)/$(CPROG).a
 
 # build tools
@@ -90,7 +85,7 @@ DEBUG   = -g -Wall
 endif
 
 IFLAGS 	= -I. -I./include/ -I./onvifgen/ 
-IFLAGS += -I../../3rdparty/openssl/include
+IFLAGS += -I$(VE_PATH)/output/$(VE_INSTALL_DIR)/include
 IFLAGS += -I./gsoap/gsoap/runtime
 
 
@@ -98,6 +93,9 @@ LDFLAGS +=  -g -L../../3rdparty/openssl-linux/  -lssl -lcrypto -lpthread -ldl -l
 
 
 all:  $(LIBS) example_
+ifeq ($(strip $(VE_OS)),macos)
+	cp "$(LIBS)" "$(VE_PATH)/output/$(VE_INSTALL_DIR)/lib/"
+endif
 
 $(LIB_SOURCES): $(HDRS)
 

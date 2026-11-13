@@ -35,6 +35,9 @@
 #include <Poco/Format.h>
 #include <Poco/Util/Application.h>
 #include <Poco/Environment.h>
+#include <Poco/Exception.h>
+#include <Poco/File.h>
+#include <Poco/Path.h>
 
 using namespace UtilityLib;
 using namespace XSDK;
@@ -52,10 +55,24 @@ using namespace Poco::Util;
 class VE_LIBRARY_API VidEnv : public Application
 {
 public:
+	static bool IsLocalOnly()
+	{
+		return Poco::Environment::has("VEOLINK_LOCAL_ONLY") &&
+			Poco::Environment::get("VEOLINK_LOCAL_ONLY") == "1";
+	}
+
 	VidEnv()
 	:m_sys(new Poco::Util::SystemConfiguration)
 	{
 		m_syshomedir = m_sys->getString("system.homeDir");
+		if (IsLocalOnly())
+		{
+			const std::string runtime = Poco::Environment::get("VEOLINK_RUNTIME_DIR", "");
+			if (runtime.empty() || !Poco::Path(runtime).isAbsolute())
+				throw Poco::InvalidArgumentException("Local-only mode requires an absolute VEOLINK_RUNTIME_DIR");
+			m_syshomedir = runtime;
+			Poco::File(m_syshomedir).createDirectories();
+		}
 		printf("Home dir --> %s\n", m_syshomedir.c_str());
 	}
 	~VidEnv(){}
@@ -126,8 +143,11 @@ public:
 	bool Init()
 	{
 #ifndef _WIN32
-		Poco::Environment::set("QT_QPA_FONTDIR", GetAppDir() + "/lib/fonts/");
-		Poco::Environment::set("QT_QPA_PLATFORM_PLUGIN_PATH", GetAppDir() + "/plugins/platforms/");
+		if (!IsLocalOnly())
+		{
+			Poco::Environment::set("QT_QPA_FONTDIR", GetAppDir() + "/lib/fonts/");
+			Poco::Environment::set("QT_QPA_PLATFORM_PLUGIN_PATH", GetAppDir() + "/plugins/platforms/");
+		}
 #endif
 		//PrintEnv();
 		return true;
@@ -154,7 +174,10 @@ public:
 #else
 		astring strPath = "vidstor/" + strApp + "/";
 #endif
-		 return GetConfDir() + strPath;
+		strPath = GetConfDir() + strPath;
+		if (IsLocalOnly())
+			Poco::File(strPath).createDirectories();
+		return strPath;
 	}
 	
 	bool PrintEnv()

@@ -1,0 +1,12 @@
+macx {
+    QMAKE_APPLE_DEVICE_ARCHS = $$(VE_MACOS_ARCH)
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = $$(MACOSX_DEPLOYMENT_TARGET)
+    QMAKE_CXXFLAGS += -stdlib=libc++
+    QMAKE_LFLAGS += -stdlib=libc++
+    QMAKE_SONAME_PREFIX = @rpath
+    VE_INSTALL_PREFIX = $$clean_path($$PWD/output/$$(VE_INSTALL_DIR))
+    QMAKE_RPATHDIR += $$VE_INSTALL_PREFIX/lib
+    INCLUDEPATH = $$VE_INSTALL_PREFIX/include $$INCLUDEPATH
+    LIBS -= -ldl -lstdc++
+    LIBS += -lc++
+}

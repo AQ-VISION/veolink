@@ -14,12 +14,23 @@
 #include "XSDK/XGuard.h"
 
 
-#ifdef IS_LINUX
+#if defined(IS_LINUX) && !defined(__APPLE__)
 #include <sys/syscall.h>
 #endif
 
 using namespace std;
 using namespace XSDK;
+
+#ifdef __APPLE__
+static uint64_t DarwinThreadID()
+{
+    uint64_t threadID = 0;
+    const int err = pthread_threadid_np(0, &threadID);
+    if(err != 0)
+        X_THROW_NO_LOG(("Unable to get Darwin thread ID: %d", err));
+    return threadID;
+}
+#endif
 
 //------------------------------------------------------------------------------
 // XTaskBase
@@ -79,7 +90,7 @@ XTaskBase* XTaskBase::CurrThread()
 #endif
 }
 
-int XTaskBase::CurrThreadID()
+XTaskBase::ThreadIDType XTaskBase::CurrThreadID()
 {
 #ifdef IS_LINUX
     const XTaskBase* taskBase = (XTaskBase*)pthread_getspecific(_tlsKey);
@@ -87,7 +98,11 @@ int XTaskBase::CurrThreadID()
     if(taskBase)
         return taskBase->ThreadID();
 
+#ifdef __APPLE__
+    return DarwinThreadID();
+#else
     return syscall(SYS_gettid);
+#endif
 #elif defined(IS_WINDOWS)
     const XTaskBase* taskBase = (XTaskBase*)TlsGetValue(_tlsKey);
 
@@ -102,7 +117,9 @@ int XTaskBase::CurrThreadID()
 
 void XTaskBase::_InitID()
 {
-#ifdef IS_LINUX
+#ifdef __APPLE__
+    _threadID = DarwinThreadID();
+#elif defined(IS_LINUX)
     _threadID = syscall(SYS_gettid);
 #elif defined(IS_WINDOWS)
     _threadID = GetCurrentThreadId();

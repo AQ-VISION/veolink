@@ -23,6 +23,8 @@
  */
 #include "utility/debug.hpp"
 #include "utility/libcli.h"
+#include <cstdlib>
+#include <cstring>
 Debug * Debug::gDebug = NULL;
 tthread::thread * Debug::gThread = NULL;
 
@@ -65,7 +67,8 @@ void Debug::run1()
 	setsockopt(s, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	const char* localOnly = std::getenv("VEOLINK_LOCAL_ONLY");
+	addr.sin_addr.s_addr = htonl(localOnly && std::strcmp(localOnly, "1") == 0 ? INADDR_LOOPBACK : INADDR_ANY);
 	addr.sin_port = htons(m_nPort);
 	if (::bind(s, (struct sockaddr *) &addr, sizeof(addr)) < 0)
 	{
@@ -233,4 +236,3 @@ int Debug::test(struct cli_def *cli, const char *command, char *argv[], int argc
 
 	return CLI_OK;
 }
-

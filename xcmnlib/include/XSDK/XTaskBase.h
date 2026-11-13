@@ -18,8 +18,8 @@
 #ifdef IS_LINUX
 #include <pthread.h>
 #include <unistd.h>
-#include <sys/syscall.h>
 #ifndef __APPLE__
+#include <sys/syscall.h>
 #include <sys/prctl.h>
 #endif
 #else
@@ -129,6 +129,12 @@ class XTaskBase
 public:
     static pthread_t invalidThreadID;
 
+#ifdef __APPLE__
+    typedef uint64_t ThreadIDType;
+#else
+    typedef int ThreadIDType;
+#endif
+
     /// Creates an XTaskBase which doesn't use a thread pool.
     X_API XTaskBase(const XString& threadName=DEFAULT_THREAD_NAME);
 
@@ -149,7 +155,7 @@ public:
     X_API virtual void* EntryPoint()=0;
 
     /// Returns the ID of this thread.
-    X_API int ThreadID() const { return _threadID; }
+    X_API ThreadIDType ThreadID() const { return _threadID; }
 
     /// Whether the thread is currently running.
     X_API bool IsRunning() const;
@@ -164,7 +170,7 @@ public:
     /// this and calling ThreadID() on the XTaskBase returned from CurrThread()
     /// is that this works even when the current thread was not started
     /// with XTaskBase.
-    static X_API int CurrThreadID();
+    static X_API ThreadIDType CurrThreadID();
 
    // Returns the CPU ID assigned to this thread
 #ifdef IS_LINUX
@@ -222,7 +228,7 @@ private:
 
     X_API void Finish();
 
-    int _threadID;
+    ThreadIDType _threadID;
     XIRef<XThreadGuts> _threadGuts;
     XString _threadName;
 

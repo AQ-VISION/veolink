@@ -6,7 +6,8 @@ TEMPLATE = app
 TARGET = VeoLinkClient
 QMAKE_CXXFLAGS += -std=c++11
 DESTDIR = ./
-QT += core sql network xml dbus widgets gui  printsupport  concurrent 
+QT += core sql network xml widgets gui printsupport concurrent
+linux: QT += dbus
 CONFIG +=  debug console c++11
 DEFINES += LINUX_OS  QT_DLL QT_MULTIMEDIA_LIB QT_MULTIMEDIAWIDGETS_LIB QT_NETWORK_LIB QT_QML_LIB QT_QUICK_LIB QT_SQL_LIB QT_CONCURRENT_LIB QT_HELP_LIB  QT_PRINTSUPPORT_LIB QT_SCRIPT_LIB QT_SVG_LIB QT_WEBKITWIDGETS_LIB QT_WIDGETS_LIB QT_XML_LIB QT_XMLPATTERNS_LIB QT_NO_BLUEZ QT_NO_UDEV WITH_OPENSSL WITH_DOM WITH_PURE_VIRTUAL
 INCLUDEPATH += ./GeneratedFiles \
@@ -74,10 +75,11 @@ LIBS +=  \
     -ldl \
     -lstdc++ 
 
-unix:macx {
-        LIBS += \
-        -lc++
-    }
+include(../../macos.pri)
+macx {
+    CONFIG += app_bundle
+    QMAKE_INFO_PLIST = ../../output/macos/VeoLinkClient.app/Contents/Info.plist
+}
 
 
 DEPENDPATH += .
@@ -86,4 +88,3 @@ OBJECTS_DIR += debug
 UI_DIR += ./GeneratedFiles
 RCC_DIR += ./GeneratedFiles
 include(../prj_linux/veclient.pri)
-
